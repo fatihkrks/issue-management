@@ -29,10 +29,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDto save(ProjectDto project) {
-        // Bussiness Logic
-        if (project.getProjectCode() == null) {
-            throw new IllegalArgumentException("Project Code cannot be null");
-        }
+
+        Project projectCheck=projectRepository.getByProjectCode(project.getProjectCode());
+        if (projectCheck!=null)
+            throw new IllegalArgumentException("Project code already exist");
 
         Project p = modelMapper.map(project, Project.class);
         p = projectRepository.save(p);
@@ -47,7 +47,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<ProjectDto> getByProjectCode(String projectCode) {
+    public ProjectDto getByProjectCode(String projectCode) {
         return null;
     }
 
@@ -67,6 +67,27 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Boolean delete(ProjectDto project) {
         return null;
+    }
+
+    public Boolean delete(Long id){
+        projectRepository.deleteById(id);
+        return true;
+    }
+
+    @Override
+    public ProjectDto update(Long id, ProjectDto projectDto) {
+       Project projectDb=projectRepository.getOne(id);
+       if (projectDb==null){
+           throw new IllegalArgumentException("Project Does Not exist ID:+id");
+       }
+        Project projectCheck=projectRepository.getByProjectCodeAndIdNot(projectDto.getProjectCode(),id);
+        if (projectCheck!=null )
+            throw new IllegalArgumentException("Project code already exist");
+
+        projectDb.setProjectCode(projectDto.getProjectCode());
+        projectDb.setProjectName(projectDto.getProjectName());
+        projectRepository.save(projectDb);
+        return modelMapper.map(projectDb,ProjectDto.class);
     }
 
 }
